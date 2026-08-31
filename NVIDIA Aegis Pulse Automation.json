@@ -1,0 +1,227 @@
+{
+  "name": "My workflow 6",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        -176
+      ],
+      "id": "641837cc-ba86-410a-bdfc-d45bec2b57c1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://newsapi.org/v2/everything?q=(NVIDIA OR \"AMD AI\" OR \"Intel Gaudi\" OR \"Google TPU\")&language=en&sortBy=publishedAt&pageSize=5&apiKey=5976161389ec421fba9196653e43dd61\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -160,
+        -176
+      ],
+      "id": "0de07bba-40b9-47f8-a88a-74ccb9f2f720",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please analyze the following latest news article for NVIDIA and correlate it with our internal sales data from Google Sheets:\n\nTitle: {{ $json.articles[0].title }}\nSource: {{ $json.articles[1].source.name }}\nPublished At: {{ $json.articles[0].publishedAt }}\nContent/Description: {{ $json.articles[0].description ||$json.articles[0].content }}\nURL: {{ $json.articles[0].url }}\n\nDetermine if there is any potential threat or opportunity, query the Google Sheet if needed, calculate the Risk Score, and generate the executive response.",
+        "options": {
+          "systemMessage": "You are \"CorpPulse-Sentinel\", an elite Market Risk & Competitor Intelligence Agent for NVIDIA.\n\nYOUR GOAL:\n1. Analyze the incoming external tech news (from the HTTP Request).\n2. Fetch current internal sales data from Google Sheets using your Google Sheets Tool.\n3. Correlate external threats (e.g., AMD/Intel announcements, pricing, tech benchmarks) with internal sales trends.\n4. Calculate a Risk Score from 1 to 10.\n5. If Risk Score >= 7, generate a structured Executive Alert for Telegram including:\n   -  Risk Score & High-level Summary\n   -  Root Cause (Data Fusion: External News + Internal Sales impact)\n   -  Actionable Strategic Recommendation for NVIDIA management.\n6. You can speak any language (e.g., Arabic , English ,etc)\nBe concise, highly professional, and data-driven."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -176
+      ],
+      "id": "dc7a2ee8-f337-4dda-8fc4-5909f2303767",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        80
+      ],
+      "id": "3a089f99-a92a-4c53-a0c6-eb8700722e22",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Xx42Fdl9xNk7UquT",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw",
+          "mode": "list",
+          "cachedResultName": "جدول بيانات بدون عنوان",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        80
+      ],
+      "id": "53081ec1-1376-4a29-b325-4734850368c1",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3JP6g5rinxDy6v0a",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "dabuiwaili@smail.ucas.edu.ps",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.htmlEmail }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -176
+      ],
+      "id": "f60225c9-c667-4342-b346-514c33d8ae9d",
+      "name": "Send a message",
+      "webhookId": "96e3755b-b808-496c-a645-16d99d3fdca4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UC2lriglqmFouKuz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. استخراج الناتج المباشر من الـ AI Agent\nlet rawOutput = $input.first().json.output || \"\";\n\n// 2. تنظيف وإزالة أغطية الكود الزائدة إن وجدت\nlet cleanedText = rawOutput\n  .replace(/```html/gi, '')\n  .replace(/```markdown/gi, '')\n  .replace(/```/g, '')\n  .trim();\n\n// 3. تحويل تنسيقات الـ Markdown إلى عناصر HTML تفاعلية ومصممة\nlet formattedContent = cleanedText\n  // تحويل العناوين إلى لون أخضر نيفيديا فاتح وواضح على الخلفية السوداء\n  .replace(/###\\s?\\*\\*(.*?)\\*\\*/g, '<h3 style=\"color: #76b900; margin-top: 20px; margin-bottom: 8px; font-size: 16px; border-bottom: 1px solid #333333; padding-bottom: 4px;\">$1</h3>')\n  .replace(/###\\s?(.*)/g, '<h3 style=\"color: #76b900; margin-top: 20px; margin-bottom: 8px; font-size: 16px; border-bottom: 1px solid #333333; padding-bottom: 4px;\">$1</h3>')\n  \n  // تحويل النص العريض إلى أبيض ناصع\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style=\"color: #ffffff !important;\">$1</strong>')\n  \n  // تحويل القوائم إلى أبيض مريح للعين\n  .replace(/^\\*\\s?(.*)/gm, '<li style=\"margin-bottom: 6px; color: #e0e0e0 !important;\">$1</li>')\n  \n  // الخط الفاصل\n  .replace(/---/g, '<hr style=\"border: 0; border-top: 1px solid #333333; margin: 18px 0;\">')\n  \n  // السطور الجديدة\n  .replace(/\\n/g, '<br>');\n\n// 4. بناء هيكل البريد الإلكتروني (Full Dark Theme)\nlet htmlTemplate = `\n<div style=\"background-color: #000000; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\">\n  <div style=\"max-width: 650px; margin: auto; background-color: #121212 !important; color: #ffffff !important; border-radius: 10px; overflow: hidden; border: 1px solid #222222;\">\n    \n    <!-- Header -->\n    <div style=\"background-color: #76b900; color: #000000; padding: 18px 20px; text-align: center;\">\n      <h2 style=\"margin: 0; font-size: 20px; font-weight: bold; letter-spacing: 0.5px; color: #000000 !important;\">🟢 NVIDIA Aegis Pulse | Risk Alert</h2>\n    </div>\n    \n    <!-- Content Body (Black Background) -->\n    <div style=\"padding: 25px; line-height: 1.7; font-size: 14px; background-color: #121212 !important; color: #ffffff !important;\">\n      ${formattedContent}\n    </div>\n    \n    <!-- Footer -->\n    <div style=\"background-color: #080808 !important; border-top: 1px solid #222222; padding: 14px; text-align: center; font-size: 12px; color: #888888 !important;\">\n      🤖 Powered by <strong>NVIDIA Aegis Pulse Autonomous Engine</strong>\n    </div>\n\n  </div>\n</div>\n`;\n\n// 5. إرجاع النتيجة لتغذية عقدة Gmail\nreturn [{\n  json: {\n    htmlEmail: htmlTemplate,\n    subject: \"[NVIDIA Aegis Pulse] Market Risk & Intelligence Report\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -176
+      ],
+      "id": "c20f3340-6e2f-48b6-ad66-74842c585aea",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "14af6bfb-5280-4aa6-94f6-d35d3e6d2d06",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db44b42f4251ac73ad2c4eb840a368478fdab138f34c710a427ce0310e414846"
+  },
+  "nodeGroups": [],
+  "id": "NVeY32fVUxkQxYI5",
+  "tags": []
+}
