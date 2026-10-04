@@ -23,7 +23,7 @@
     },
     {
       "parameters": {
-        "url": "=https://newsapi.org/v2/everything?q=(NVIDIA OR \"AMD AI\" OR \"Intel Gaudi\" OR \"Google TPU\")&language=en&sortBy=publishedAt&pageSize=5&apiKey=5976161389ec421fba9196653e43dd61\n",
+        "url": "=https://newsapi.org/v2/everything?q=(NVIDIA OR \"AMD AI\" OR \"Intel Gaudi\" OR \"Google TPU\")&language=en&sortBy=publishedAt&pageSize=5&apiKey=n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -78,14 +78,14 @@
           "value": "1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw",
           "mode": "list",
           "cachedResultName": "جدول بيانات بدون عنوان",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "الورقة1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oXpW_dIoPxXC7mAAgGz0GKWuQIf_r7kIiltKakjnItw/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets"
         },
         "options": {}
       },
@@ -106,7 +106,7 @@
     },
     {
       "parameters": {
-        "sendTo": "dabuiwaili@smail.ucas.edu.ps",
+        "sendTo": "daalia@gmail.com",
         "subject": "={{ $json.subject }}",
         "message": "={{ $json.htmlEmail }}\n",
         "options": {}
@@ -219,7 +219,7 @@
   "versionId": "14af6bfb-5280-4aa6-94f6-d35d3e6d2d06",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "db44b42f4251ac73ad2c4eb840a368478fdab138f34c710a427ce0310e414846"
+    "instanceId": ""
   },
   "nodeGroups": [],
   "id": "NVeY32fVUxkQxYI5",
